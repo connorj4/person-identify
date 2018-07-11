@@ -26,10 +26,10 @@ def ImportPoints():
     # note Create loop to import all data from database
     
     # Read files and import data into dictionary
-    file_name_ct = 1
-    fine_name_ftr = 1
 
     # add men
+    file_name_ct = 1
+    fine_name_ftr = 1
     file_name_gdr = 'm'
     while file_name_ct < 77:
         file_data = file_name_gdr+'-'+str('{0:03}'.format(file_name_ct))+'-'+str('{0:02}'.format(fine_name_ftr))+'.pts'
@@ -51,7 +51,10 @@ def ImportPoints():
         file_name_ct += 1
 
     # add women
+    file_name_ct = 1
+    fine_name_ftr = 1
     file_name_gdr = 'w'
+    print("This is working")
     while file_name_ct < 61:
         file_data = file_name_gdr+'-'+str('{0:03}'.format(file_name_ct))+'-'+str('{0:02}'.format(fine_name_ftr))+'.pts'
         try:
@@ -96,7 +99,7 @@ def main():
     try:
         print("Program has begun")
         #testing creating the database
-        print('Database: ', ImportPoints())
+        print('Database Count: ', len(ImportPoints()))
 
     except IOError:
         print("The file was not found. Check name or path.")
