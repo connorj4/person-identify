@@ -24,7 +24,7 @@ def read_files(gender, person):
                 gender+'-'+str('{0:03}'.format(person))+'-01.pts'), 'r') as file_object:
 
             data = file_object.read().split()
-            face_data[]
+            face_data = []
             for element in data:
                 try:
                     face_data.append(float(element))
@@ -66,14 +66,15 @@ def import_points():
 '''
 def main():
     try:
-        print("Program has begun")
-        print('Dataset: ', import_points()
-        break
+        print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
+        print('Dataset: ', import_points())
+
     except:
-        print("Unexpected error:", sys.exc_info()[0])
+        print("\n\n ------------------------------------------------------------- \n Unexpected Error:", sys.exc_info()[0], "\n")
         raise
+
     finally:
-        print('Process Completed')
+        print('\n\n ------------------------------------------------------------- \n Process Completed \n')
 
 
 '''
