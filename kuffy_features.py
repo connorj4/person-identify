@@ -44,10 +44,10 @@ def main():
         print('Aggressive ratio: ', lip_length_ratio(x1, y1, x2, y2))
         print('Eye-brow length ratio: ', eye_brow_length(x1, y1, x2, y2))
         print('Aggressive ratio: ', aggressive_ratio())
-        break
+       
     except:
-        print("Unexpected error:", sys.exc_info()[0])
-        raise
+        print('Error Detected')
+        
     finally:
         print('Process Completed')
 
