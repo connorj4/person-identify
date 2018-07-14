@@ -40,29 +40,35 @@ def read_files(gender, person):
 
 def import_points():
     dataset = []
+    person_class = 0
     #note just reading one file
     #need to loop men and women and build the dataset
-    face_array = read_files('m', 1)
-    print('face m 1:', face_array, len(face_array))
-
-    #convert to nupmy array
-    vector_pts = np.array(face_array)
-    vector_pts = vector_pts.reshape(22, 2)
- 
-    feature_0 = eye_length_ratio(vector_pts[9, ], vector_pts[10, ], vector_pts[11, ], vector_pts[12, ], vector_pts[8, ], vector_pts[13, ])
-    feature_1 = eye_distance_ratio(vector_pts[0, ], vector_pts[1, ],vector_pts[8, ], vector_pts[13, ])
-    feature_2 = nose_ratio(vector_pts[15, ], vector_pts[16, ], vector_pts[20, ], vector_pts[21, ])
-    feature_3 = lip_size_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[17, ], vector_pts[18, ])
-    feature_4 = lip_length_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[20, ], vector_pts[21, ])
-    feature_5 = eye_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
-    feature_6 = lip_length_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
-    features = [(feature_0, feature_1, feature_2, feature_3, feature_4, feature_5, feature_6), 0]
-
-    dataset.append(features)
-
-    #double check
-    #check = math.sqrt((face_array[14]-face_array[24]) ** 2 + (face_array[15]-face_array[25]) ** 2)
-    #print('check: ', check)
+    if person_class < 77:
+        counter = 0
+        while counter < 77:
+            # Read the files
+            face_array = read_files('m', counter + 1)
+            # Convert to nupmy array
+            vector_pts = np.array(face_array)
+            vector_pts = vector_pts.reshape(22, 2)
+            # Add Features to the dataset
+            dataset.append(feature_extraction(vector_pts, counter))
+            # Count up
+            person_class += 1
+            counter += 1
+    else:
+        counter = 0
+        while counter < 61:
+            # Read the files
+            face_array = read_files('w', counter + 1)
+            # Convert to nupmy array
+            vector_pts = np.array(face_array)
+            vector_pts = vector_pts.reshape(22, 2)
+            # Add Features to the dataset
+            dataset.append(feature_extraction(vector_pts, counter))
+            # Count up
+            person_class += 1
+            counter += 1
 
     return dataset
 
@@ -119,6 +125,16 @@ def aggressive_ratio(pt_10, pt_19, pt_20, pt_21):
 '''
     Feature Extraction
 '''
+def feature_extraction(vector_pts, count):
+    feature_0 = eye_length_ratio(vector_pts[9, ], vector_pts[10, ], vector_pts[11, ], vector_pts[12, ], vector_pts[8, ], vector_pts[13, ])
+    feature_1 = eye_distance_ratio(vector_pts[0, ], vector_pts[1, ],vector_pts[8, ], vector_pts[13, ])
+    feature_2 = nose_ratio(vector_pts[15, ], vector_pts[16, ], vector_pts[20, ], vector_pts[21, ])
+    feature_3 = lip_size_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[17, ], vector_pts[18, ])
+    feature_4 = lip_length_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[20, ], vector_pts[21, ])
+    feature_5 = eye_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
+    feature_6 = lip_length_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
+    features = [(feature_0, feature_1, feature_2, feature_3, feature_4, feature_5, feature_6), count]
+    return features
 
 '''
     Summarize Scores
@@ -134,7 +150,7 @@ def aggressive_ratio(pt_10, pt_19, pt_20, pt_21):
 def main():
     try:
         print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
-        print('Dataset: ', import_points())
+        print('Dataset: ', import_points(), '/n count', )
 
     except:
         print("\n\n ------------------------------------------------------------- \n Unexpected Error:\n")
