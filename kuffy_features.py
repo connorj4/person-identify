@@ -44,6 +44,8 @@ def main():
         print('Aggressive ratio: ', lip_length_ratio(x1, y1, x2, y2))
         print('Eye-brow length ratio: ', eye_brow_length(x1, y1, x2, y2))
         print('Aggressive ratio: ', aggressive_ratio())
+
+        check = math.sqrt((face_array[14]-face_array[24]) ** 2 + (face_array[15]-face_array[25]) ** 2)
        
     except:
         print('Error Detected')
