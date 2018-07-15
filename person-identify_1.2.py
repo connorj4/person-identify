@@ -42,8 +42,8 @@ def import_points():
     dataset = []
     #note just reading one file
     #need to loop men and women and build the dataset
-    face_array = read_files('m', 1)
-    print('face m 1:', face_array, len(face_array))
+    face_array = read_files('w', 34)
+    print('face w 34:', face_array, len(face_array))
 
     #convert to nupmy array
     vector_pts = np.array(face_array)
