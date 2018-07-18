@@ -11,6 +11,7 @@
 #-----------------------------------------------------------------------------
 
 import os 
+import sys
 import numpy as np
 import pandas as pd
 
@@ -20,17 +21,19 @@ from sklearn import preprocessing
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 
 
 '''
     Load Data
 '''
 
-def read_files(gender, person):
+def read_files(gender, person, image):
 
     try:
         face_data = []
-        with open(os.path.join('points_22/'+gender+'-'+str('{0:03}'.format(person)), gender+'-'+str('{0:03}'.format(person))+'-01.pts'), 'r') as file_object:
+        with open(os.path.join('points_22/'+gender+'-'+str('{0:03}'.format(person)), gender+'-'+str('{0:03}'.format(person))+'-0'+str(image)+'.pts'), 'r') as file_object:
             data = file_object.read().split()
             #print('data: ', data)
             for element in data:
@@ -49,46 +52,47 @@ def read_files(gender, person):
 
 
 def import_points():
-    dataset = pd.DataFrame(columns=['F1','F2','F3','F4','F5','F6','F7'])
+    #dataset = pd.DataFrame(columns=['data','target'])
+    data = []
+    target = []
     person_class = 0
     
-    if person_class < 76:
+    img_sample = 0
+    while img_sample < 3:
         counter = 0
-        while counter < 75:
+        while counter < 50:
             try:
                 # Read the files
-                face_array = read_files('m', counter + 1)
+                face_array = read_files('m', counter + 1, img_sample + 1)
                 # Convert to nupmy array
                 vector_pts = np.array(face_array)
                 vector_pts = vector_pts.reshape(22, 2)
                 # Add Features to the dataset
-                dataset = dataset.append(pd.DataFrame(feature_extraction(vector_pts), columns=['F1','F2','F3','F4','F5','F6','F7']),ignore_index=True)
+                #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
+                data.append(feature_extraction(vector_pts))
+                target.append(counter)
+            #except IOError as err:
+                #print("I/O error: {0}".format(err))
+                #pass
             except:
-                #print('Person: ', person_class, ' was skipped.')
+                #print('Person: ', img_sample, ': ', counter, ' was skipped.')
+                #print("Unexpected error:", sys.exc_info()[0])
                 pass
+            # Count up
+            counter += 1
+        img_sample += 1
 
-            # Count up
-            person_class += 1
-            counter += 1
-     
-    if person_class > 74:
-        counter = 0
-        while counter < 60:
-            try:
-                # Read the files
-                face_array = read_files('w', counter + 1)
-                # Convert to nupmy array
-                vector_pts = np.array(face_array)
-                vector_pts = vector_pts.reshape(22, 2)
-                # Add Features to the dataset
-                dataset = dataset.append(pd.DataFrame(feature_extraction(vector_pts), columns=['F1','F2','F3','F4','F5','F6','F7']),ignore_index=True)
-                
-            except:
-                #print('Person: ', person_class, ' was skipped.')
-                pass
-            # Count up
-            person_class += 1
-            counter += 1
+    #print('\ndata: ', data, len(data), '\n------------\n')
+    #print('\ntarget: ', target, len(target), '\n------------\n')
+
+    data = np.array(data)
+    target = np.array(target)
+
+    dataset = {'data': data, 'target': target}
+    #print('\ndict: ', d, len(d), '\n------------\n')
+    #Convert to panda dataframe
+    #dataset = pd.DataFrame(data=d)
+
     return dataset
 
 '''
@@ -152,9 +156,9 @@ def feature_extraction(vector_pts):
     feature_4 = lip_length_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[20, ], vector_pts[21, ])
     feature_5 = eye_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
     feature_6 = lip_length_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
-    features = [np.around([feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6], decimals=8)]
-    #features = [feature_0,feature_1,feature_2]
-    print('features: ',features)
+    #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
+    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
+    #print('features: ', features)
     return features
 
 '''
@@ -194,47 +198,66 @@ def main():
         print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
         # The dataset
         all_data = import_points()
-        print(all_data, '\n\n', all_data.shape, '\n\n')
+        #print(all_data, '\n\n')
+
+        X = all_data['data']
+        y = all_data['target']
+
+        X_new = SelectKBest(chi2, k=3).fit_transform(X, y)
+
+        #print('X: \n', X)
         # Normalize
-        data_normalized = preprocessing.normalize(all_data, norm='l2')
-        print('Normalize', data_normalized)
-        #preprocessing.Normalizer().
-        #X_train = preprocessing.normalize(X_train)
+        X_normalized = preprocessing.normalize(X, norm='l2')
 
+        
+        #print('X norm:', X)
+        # Scalling the data STD
+        standardized_X = preprocessing.scale(X)
 
-        # y is the classes, sense we are looking for individual persons in 120 list
-        y = list(all_data.index)
-        X_train, X_test, y_train, y_test = train_test_split(all_data, y, test_size=0.2, random_state=1)
+        min_max_scaler = preprocessing.MinMaxScaler()
+        X_minmax = min_max_scaler.fit_transform(X)
 
-        #scaler = preprocessing.StandardScaler().fit(X_train)
+        scaler = preprocessing.StandardScaler().fit(X)
+        X_scaler = scaler.transform(X)
+
+        #print('y: ', y)
+        X_train, X_test, y_train, y_test = train_test_split(X_scaler, y, test_size=0.1, random_state=36)
+
+        #Scalling
+        #std_scale = preprocessing.StandardScaler().fit(X_train)
+        #X_train = std_scale.transform(X_train)
+        #X_test = std_scale.transform(X_test)
 
         neigh = KNeighborsClassifier(n_neighbors=1)
 
-        print('X_train', X_train)
+        #print('X_train', X_train)
 
         neigh.fit(X_train, y_train)
-        print(neigh, '\n')
-        print('\nY Train Class: ',y_train, len(y_train), '\n')
+        #print(neigh, '\n')
+        #print('\nY Train Class: ',y_train, len(y_train), '\n')
 
         y_train_pr = list(neigh.predict(X_train))
-        print('Y Train Predict: ',y_train_pr, len(y_train_pr))
-        print('Score: ',metrics.accuracy_score(y_train, y_train_pr))
+        #print('Y Train Predict: ',y_train_pr, len(y_train_pr))
+        print('Train Score: ',metrics.accuracy_score(y_train, y_train_pr))
 
         print('\n-------------------------------------\n')
 
         print('\nY Test Class: ',y_test, len(y_test), '\n')
 
-        y_test_pr = list(neigh.predict(X_test))
+        y_test_pr = neigh.predict(X_test)
         print('Y Test Predict: ',y_test_pr, len(y_test_pr))
 
 
         print('Score: ',metrics.accuracy_score(y_test, y_test_pr))
+        average_precision = average_precision_score(y_test, y_test_pr)
+
+        print('Average precision-recall score: {0:0.2f}'.format(average_precision))
 
         #print('Score: ', neigh.score(y_test, y_pred))
 
 
         # cofusion matrix
-        #print("\n\n ------------------------------------------------------------- \n Confustion matrix:\n",confusion_matrix(y_true, y_pred))
+        print("\n\n ------------------------------------------------------------- \n Confustion matrix:\n",confusion_matrix(y_test, y_test_pr))
     except:
         print("\n\n ------------------------------------------------------------- \n Unexpected Error:\n")
         raise

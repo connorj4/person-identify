@@ -18,7 +18,7 @@ def main():
         print("Program has begun \n -------------------------------- \n")
         # note change x1, y1, x2, y2 
         a = math.sqrt((sample_1[0]-sample_1[2]) ** 2 + (sample_1[1]-sample_1[3]) ** 2)
-        b = math.sqrt((sample_1[14]-sample_1[24]) ** 2 + (sample_1[15]-sample_1[25]) ** 2)
+        b = math.sqrt((sample_1[16]-sample_1[26]) ** 2 + (sample_1[17]-sample_1[27]) ** 2)
         print('feature_1:', a / b)
        
     finally:
