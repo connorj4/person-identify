@@ -13,16 +13,17 @@
 import os 
 import sys
 import numpy as np
-import pandas as pd
+import pylab as pl
+#import pandas as pd
 
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn import metrics
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import metrics
+
 
 
 '''
@@ -198,7 +199,7 @@ def main():
         print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
         # The dataset
         all_data = import_points()
-        #print(all_data, '\n\n')
+        print(all_data, '\n\n')
 
         X = all_data['data']
         y = all_data['target']
@@ -236,30 +237,38 @@ def main():
         #print(neigh, '\n')
         #print('\nY Train Class: ',y_train, len(y_train), '\n')
 
-        y_train_pr = list(neigh.predict(X_train))
+        y_train_pr = neigh.predict(X_train)
+
+        y_train_pr = np.array(y_train_pr)
+        y_test = np.array(y_test)
+        
         #print('Y Train Predict: ',y_train_pr, len(y_train_pr))
         print('Train Score: ',metrics.accuracy_score(y_train, y_train_pr))
 
         print('\n-------------------------------------\n')
-
-        print('\nY Test Class: ',y_test, len(y_test), '\n')
+        # Compare y_test
+        print('\nY Test Class: ', y_test, len(y_test), '\n')
         y_test_pr = neigh.predict(X_test)
-        print('Y Test Predict: ',y_test_pr, len(y_test_pr))
+        print('Y Test Predict: ', y_test_pr, len(y_test_pr))
 
         accuracy = metrics.accuracy_score(y_test, y_test_pr)
         print('Test Accuracy: ', accuracy)
 
-        recall_macro = metrics.recall_score(y_test, y_test_pr, average='macro')  
-        recall_mirco = metrics.recall_score(y_test, y_test_pr, average='micro')  
-        recall_weighted = metrics.recall_score(y_test, y_test_pr, average='weighted') 
+        recall_macro = metrics.recall_score(y_test, y_test_pr, average='macro', labels=np.unique(y_test_pr))  
+        recall_mirco = metrics.recall_score(y_test, y_test_pr, average='micro', labels=np.unique(y_test_pr))   
+        recall_weighted = metrics.recall_score(y_test, y_test_pr, average='weighted', labels=np.unique(y_test_pr))  
         print('Reacall Macro: ', recall_macro,'\nReacall Micro: ', recall_mirco,'\nReacall Weighted: ', recall_weighted, )
 
-        average_precision = metrics.average_precision_score(y_test, y_test_pr, average='weighted')
-        print('Average Precision Score: ', average_precision)
+        # bug Not Working
+        #average_precision = metrics.average_precision_score(y_test, y_test_pr, average='macro')
+        #print('Average Precision Score: ', average_precision)
 
 
         # cofusion matrix
-        print("\n\n ------------------------------------------------------------- \n Confustion matrix:\n",confusion_matrix(y_test, y_test_pr))
+        labels = list(range(len(y_test_pr)))
+        print("\n\n ------------------------------------------------------------- \n Confustion matrix:\n",metrics.confusion_matrix(y_test, y_test_pr, labels))
+
+
     except:
         print("\n\n ------------------------------------------------------------- \n Unexpected Error:\n")
         raise
