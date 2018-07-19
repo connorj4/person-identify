@@ -16,11 +16,11 @@ import numpy as np
 import pylab as pl
 #import pandas as pd
 
-#from matplotlib import pyplot as plt
-#from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import Normalizer
-from sklearn.preprocessing import MinMaxScaler
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 
@@ -72,8 +72,7 @@ def import_points():
                     # Convert to nupmy array
                     vector_pts = np.array(face_array)
                     vector_pts = vector_pts.reshape(22, 2)
-
-                    print('last cood train: ', img_sample, ':', counter, vector_pts[-1])
+                    print(vector_pts)
                     # Add Features to the dataset
                     #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
                     data_training.append(feature_extraction(vector_pts))
@@ -85,7 +84,7 @@ def import_points():
                 except:
                     print('Person: ', img_sample, ': ', counter, ' was skipped.')
                     #print("Unexpected error:", sys.exc_info()[0])
-                    #pass
+                    pass
                 # Count up
             img_sample += 1
         else:
@@ -96,8 +95,7 @@ def import_points():
                     # Convert to nupmy array
                     vector_pts = np.array(face_array)
                     vector_pts = vector_pts.reshape(22, 2)
-
-                    print('last coord test: ', img_sample, ':', counter, vector_pts[-1])
+                    print('Test', vector_pts)
                     # Add Features to the dataset
                     #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
                     data_testing.append(feature_extraction(vector_pts))
@@ -122,13 +120,13 @@ def import_points():
     data_testing = np.array(data_testing)
     target_testing = np.array(target_testing)
 
-    dataset = {'data_train': data_training, 'target_train': target_training, 'data_test': data_testing, 'target_test': target_testing}
-    #dataset_testing = {'data_test': data_testing, 'target_test': target_testing}
+    dataset_training = {'data': data_training, 'target': target_training}
+    dataset_testing = {'data': data_testing, 'target': target_testing}
     #print('\ndict: ', d, len(d), '\n------------\n')
     #Convert to panda dataframe
     #dataset = pd.DataFrame(data=d)
 
-    return dataset
+    return dataset_training, dataset_testing
 
 '''
     Define Features
@@ -191,8 +189,8 @@ def feature_extraction(vector_pts):
     feature_4 = lip_length_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[20, ], vector_pts[21, ])
     feature_5 = eye_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
     feature_6 = lip_length_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
-    #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
-    features = [feature_0,feature_1,feature_3,feature_4,feature_5]
+    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
+    #features = [feature_0,feature_1,feature_3,feature_4,feature_5]
     #print('features: ', features)
     return features
 
@@ -232,58 +230,83 @@ def main():
     try:
         print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
         # The dataset
-        data_set = import_points()
-        #print('Just features: \n', data_set, '\n\n')
+        data_training, data_testing = import_points()
+        #print(data_testing, '\n\n', data_training)
 
-        X_train = data_set['data_train']
-        y_train = data_set['target_train']
+        X_train = data_training['data']
+        y_train = data_training['target']
 
-        X_test = data_set['data_test']
-        y_test = data_set['target_test']
+        X_test = data_testing['data']
+        y_test = data_testing['target']
 
-        # Try something to normalize or scale
-        # Pre processing
-        scaler = StandardScaler().fit(X_train)
-        X_train = scaler.transform(X_train)
-        X_test = scaler.transform(X_test)
+        #X_new = SelectKBest(chi2, k=3).fit_transform(X, y)
 
-        #min_max_scaler = MinMaxScaler().fit(X_train)
-        #X_train = min_max_scaler.transform(X_train)
-        #X_test = min_max_scaler.transform(X_test)
+        #print('X: \n', X)
+        # Normalize
+        X_train_normalized = preprocessing.normalize(X_train, norm='l2')
+        X_test_normalized = preprocessing.normalize(X_test, norm='l2')
+        
+        #print('X norm:', X)
+        # Scalling the data STD
+        #standardized_X = preprocessing.scale(X)
 
-        #normalizer = Normalizer().fit(X_train)
-        #X_train = normalizer.transform(X_train)
-        #X_test = normalizer.transform(X_test)
+        #min_max_scaler = preprocessing.MinMaxScaler()
+        #X_minmax = min_max_scaler.fit_transform(X)
+
+        #test_scaler = preprocessing.StandardScaler().fit(X_test)
+        #X_test_scaler = test_scaler.transform(X_test)
+
+        #train_scaler = preprocessing.StandardScaler().fit(X_train)
+        #X_train_scaler = train_scaler.transform(X_train)
+
+        #print('y: ', y)
+        #X_train, X_test, y_train, y_test = train_test_split(X_scaler, y, test_size=0.1, random_state=36)
+
+        #Scalling
+        #std_scale = preprocessing.StandardScaler().fit(X_train)
+        #X_train = std_scale.transform(X_train)
+        #X_test = std_scale.transform(X_test)
 
         neigh = KNeighborsClassifier(n_neighbors=1)
 
-        print('\n-------------------------------------\n')
+        #print('X_train', X_train)
 
-        neigh.fit(X_train, y_train)
-        print(neigh, '\n')
+        neigh.fit(X_train_normalized, y_train)
+        #print(neigh, '\n')
+        #print('\nY Train Class: ',y_train, len(y_train), '\n')
+
+        #y_train_pr = neigh.predict(X_train_normalized)
+
+        #y_train_pr = np.array(y_train_pr)
+        #y_test = np.array(y_test)
+        
+        #print('Y Train Predict: ',y_train_pr, len(y_train_pr))
+        #print('Train Score: ',metrics.accuracy_score(y_train, y_train_pr))
 
         print('\n-------------------------------------\n')
         # Compare y_test
         #print('\nY Test Class: ', y_test, len(y_test), '\n')
-        test_predict = neigh.predict(X_test)
-        print('Test Predict: ', test_predict, len(test_predict))
+        y_test_pr = neigh.predict(X_test_normalized)
+        print('Y Test Predict: ', y_test_pr, len(y_test_pr))
 
-        accuracy = metrics.accuracy_score(y_test, test_predict)
+        accuracy = metrics.accuracy_score(y_test, y_test_pr)
         print('Test Accuracy: ', accuracy)
-        print('\n-------------------------------------\n')
-        train_predict = neigh.predict(X_train)
-        print('Train Predict: ', train_predict, len(train_predict))
 
-        accuracy = metrics.accuracy_score(y_train, train_predict)
-        print('Train Accuracy: ', accuracy)
-        print('\n-------------------------------------\n')
+        #recall_macro = metrics.recall_score(y_test, y_test_pr, average='macro', labels=np.unique(y_test_pr))  
+        #recall_mirco = metrics.recall_score(y_test, y_test_pr, average='micro', labels=np.unique(y_test_pr))   
+        #recall_weighted = metrics.recall_score(y_test, y_test_pr, average='weighted', labels=np.unique(y_test_pr))  
+        #print('Reacall Macro: ', recall_macro,'\nReacall Micro: ', recall_mirco,'\nReacall Weighted: ', recall_weighted, )
 
-        
-        print(metrics.classification_report(y_test, test_predict))
+        # bug Not Working
+        #average_precision = metrics.average_precision_score(y_test, y_test_pr, average='macro')
+        #print('Average Precision Score: ', average_precision)
+        #target_names = list(range(len(y_test_pr)))
+        #print(target_names)
+        print(metrics.classification_report(y_test, y_test_pr))
 
         # cofusion matrix
-        labels = list(range(len(test_predict)))
-        print("\n\n ------------------------------------------------------------- \n Confustion matrix:\n",metrics.confusion_matrix(y_test, test_predict, labels))
+        labels = list(range(len(y_test_pr)))
+        print("\n\n ------------------------------------------------------------- \n Confustion matrix:\n",metrics.confusion_matrix(y_test, y_test_pr, labels))
 
 
     except:

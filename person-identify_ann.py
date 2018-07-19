@@ -16,12 +16,10 @@ import numpy as np
 import pylab as pl
 #import pandas as pd
 
-#from matplotlib import pyplot as plt
-#from sklearn.model_selection import train_test_split
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import Normalizer
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn import metrics
 
 
@@ -191,8 +189,8 @@ def feature_extraction(vector_pts):
     feature_4 = lip_length_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[20, ], vector_pts[21, ])
     feature_5 = eye_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
     feature_6 = lip_length_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
-    #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
-    features = [feature_0,feature_1,feature_3,feature_4,feature_5]
+    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
+    #features = [feature_0,feature_1,feature_3,feature_4,feature_5]
     #print('features: ', features)
     return features
 
@@ -241,37 +239,31 @@ def main():
         X_test = data_set['data_test']
         y_test = data_set['target_test']
 
-        # Try something to normalize or scale
         # Pre processing
-        scaler = StandardScaler().fit(X_train)
+        scaler = StandardScaler()
+        # Fit only to the training data
+        scaler.fit(X_train)
+
         X_train = scaler.transform(X_train)
         X_test = scaler.transform(X_test)
 
-        #min_max_scaler = MinMaxScaler().fit(X_train)
-        #X_train = min_max_scaler.transform(X_train)
-        #X_test = min_max_scaler.transform(X_test)
-
-        #normalizer = Normalizer().fit(X_train)
-        #X_train = normalizer.transform(X_train)
-        #X_test = normalizer.transform(X_test)
-
-        neigh = KNeighborsClassifier(n_neighbors=1)
-
+        mlp = MLPClassifier(hidden_layer_sizes=(7,7,7),max_iter=500)
+        
         print('\n-------------------------------------\n')
 
-        neigh.fit(X_train, y_train)
-        print(neigh, '\n')
+        mlp.fit(X_train, y_train)
+        print(mlp, '\n')
 
         print('\n-------------------------------------\n')
         # Compare y_test
         #print('\nY Test Class: ', y_test, len(y_test), '\n')
-        test_predict = neigh.predict(X_test)
+        test_predict = mlp.predict(X_test)
         print('Test Predict: ', test_predict, len(test_predict))
 
         accuracy = metrics.accuracy_score(y_test, test_predict)
         print('Test Accuracy: ', accuracy)
         print('\n-------------------------------------\n')
-        train_predict = neigh.predict(X_train)
+        train_predict = mlp.predict(X_train)
         print('Train Predict: ', train_predict, len(train_predict))
 
         accuracy = metrics.accuracy_score(y_train, train_predict)
