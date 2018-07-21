@@ -65,7 +65,7 @@ def import_points():
         # Testing data creation
         counter = 0
         if img_sample % 2 == 0:
-            while counter < 20:
+            while counter < 30:
                 try:
                     # Read the files
                     face_array = read_files('m', counter + 1, img_sample + 1)
@@ -89,7 +89,7 @@ def import_points():
                 # Count up
             img_sample += 1
         else:
-            while counter < 20:
+            while counter < 30:
                 try:
                     # Read the files
                     face_array = read_files('m', counter + 1, img_sample + 1)
@@ -112,6 +112,31 @@ def import_points():
                     pass
                 # Count up
             img_sample += 1
+
+        counter = 0
+        while counter < 30:
+                try:
+                    # Read the files
+                    face_array = read_files('m', counter + 1, 5)
+                    # Convert to nupmy array
+                    vector_pts = np.array(face_array)
+                    vector_pts = vector_pts.reshape(22, 2)
+
+                    print('last cood train: ', 5, ':', counter, vector_pts[-1])
+                    # Add Features to the dataset
+                    #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
+                    data_training.append(feature_extraction(vector_pts))
+                    target_training.append(counter)
+                    counter += 1
+                #except IOError as err:
+                    #print("I/O error: {0}".format(err))
+                    #pass
+                except:
+                    print('Person: ', img_sample, ': ', counter, ' was skipped.')
+                    #print("Unexpected error:", sys.exc_info()[0])
+                    #pass
+                # Count up
+           
 
 
     #print('\ndata: ', data, len(data), '\n------------\n')
@@ -179,6 +204,16 @@ def aggressive_ratio(pt_10, pt_19, pt_20, pt_21):
     feature_6 = np.linalg.norm(pt_10-pt_19) / np.linalg.norm(pt_20-pt_21)
     return feature_6
 
+# 08. left face ratio
+def left_face_ratio(pt_20, pt_19, pt_8):
+    feature_7 = np.linalg.norm(pt_20-pt_19) / np.linalg.norm(pt_8-pt_19)
+    return feature_7
+
+# 09. right face ratio
+def right_face_ratio(pt_21, pt_19, pt_13):
+    feature_8 = np.linalg.norm(pt_21-pt_19) / np.linalg.norm(pt_13-pt_19)
+    return feature_8
+
 
 '''
     Feature Extraction
@@ -189,10 +224,13 @@ def feature_extraction(vector_pts):
     feature_2 = nose_ratio(vector_pts[15, ], vector_pts[16, ], vector_pts[20, ], vector_pts[21, ])
     feature_3 = lip_size_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[17, ], vector_pts[18, ])
     feature_4 = lip_length_ratio(vector_pts[2, ], vector_pts[3, ], vector_pts[20, ], vector_pts[21, ])
-    feature_5 = eye_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
-    feature_6 = lip_length_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
+    feature_5 = eye_brow_length_ratio(vector_pts[4, ], vector_pts[5, ], vector_pts[6, ], vector_pts[7, ], vector_pts[8, ], vector_pts[13, ])
+    feature_6 = aggressive_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
+    feature_7 = left_face_ratio(vector_pts[20, ], vector_pts[19, ], vector_pts[8, ])
+    feature_8 = right_face_ratio(vector_pts[21, ], vector_pts[19, ], vector_pts[13, ])
+    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_8]
     #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
-    features = [feature_0,feature_1,feature_3,feature_4,feature_5]
+    #features = [feature_0,feature_1,feature_3,feature_4,feature_5]
     #print('features: ', features)
     return features
 
@@ -231,6 +269,7 @@ Classifiers
 def main():
     try:
         print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
+        print("\n\n K-nn \n ------------------------------------------------------------- \n")
         # The dataset
         data_set = import_points()
         #print('Just features: \n', data_set, '\n\n')

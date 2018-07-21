@@ -14,11 +14,15 @@ import os
 import sys
 import numpy as np
 import pylab as pl
+#import pandas as pd
+
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import Normalizer
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
+
+
 
 '''
     Load Data
@@ -107,28 +111,29 @@ def import_points():
                 # Count up
             img_sample += 1
 
+            counter = 0
     while counter < 30:
-        try:
-            # Read the files
-            face_array = read_files('m', counter + 1, 5)
-            # Convert to nupmy array
-            vector_pts = np.array(face_array)
-            vector_pts = vector_pts.reshape(22, 2)
+            try:
+                # Read the files
+                face_array = read_files('m', counter + 1, 5)
+                # Convert to nupmy array
+                vector_pts = np.array(face_array)
+                vector_pts = vector_pts.reshape(22, 2)
 
-            #print('last cood train: ', 5, ':', counter, vector_pts[-1])
-            # Add Features to the dataset
-            #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
-            data_training.append(feature_extraction(vector_pts))
-            target_training.append(counter)
-            counter += 1
-        #except IOError as err:
-            #print("I/O error: {0}".format(err))
-            #pass
-        except:
-            print('Person: ', img_sample, ': ', counter, ' was skipped.')
-            #print("Unexpected error:", sys.exc_info()[0])
-            #pass
-        # Count up
+                #print('last cood train: ', 5, ':', counter, vector_pts[-1])
+                # Add Features to the dataset
+                #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
+                data_training.append(feature_extraction(vector_pts))
+                target_training.append(counter)
+                counter += 1
+            #except IOError as err:
+                #print("I/O error: {0}".format(err))
+                #pass
+            except:
+                print('Person: ', img_sample, ': ', counter, ' was skipped.')
+                #print("Unexpected error:", sys.exc_info()[0])
+                #pass
+            # Count up
 
 
     #print('\ndata: ', data, len(data), '\n------------\n')
@@ -206,6 +211,16 @@ def right_face_ratio(pt_21, pt_19, pt_13):
     feature_8 = np.linalg.norm(pt_21-pt_19) / np.linalg.norm(pt_13-pt_19)
     return feature_8
 
+# 10. left face ratio
+def left_cheek_ratio(pt_15, pt_14, pt_20, pt_13):
+    feature_9 = np.linalg.norm(pt_15-pt_14) / np.linalg.norm(pt_20-pt_13)
+    return feature_9
+
+# 11. right face ratio
+def right_cheek_ratio(pt_14, pt_16, pt_21, pt_8):
+    feature_10 = np.linalg.norm(pt_14-pt_16) / np.linalg.norm(pt_21-pt_8)
+    return feature_10
+
 
 '''
     Feature Extraction
@@ -220,7 +235,9 @@ def feature_extraction(vector_pts):
     feature_6 = aggressive_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
     feature_7 = left_face_ratio(vector_pts[20, ], vector_pts[19, ], vector_pts[8, ])
     feature_8 = right_face_ratio(vector_pts[21, ], vector_pts[19, ], vector_pts[13, ])
-    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_8]
+    feature_9 = left_cheek_ratio(vector_pts[15, ], vector_pts[14, ], vector_pts[20, ], vector_pts[13, ])
+    feature_10 = right_cheek_ratio(vector_pts[14, ], vector_pts[16, ], vector_pts[21, ], vector_pts[8, ])
+    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
     #features = [feature_0,feature_1,feature_3,feature_4,feature_5]
     #print('features: ', features)
     return features
@@ -260,7 +277,7 @@ Classifiers
 def main():
     try:
         print("\n\n Program Has Begun... \n ------------------------------------------------------------- \n")
-        print("\n\n nb... \n ------------------------------------------------------------- \n")
+        print("\n\n RF... \n ------------------------------------------------------------- \n")
         # The dataset
         data_set = import_points()
         #print('Just features: \n', data_set, '\n\n')
@@ -271,30 +288,32 @@ def main():
         X_test = data_set['data_test']
         y_test = data_set['target_test']
 
-        # Try something to normalize or scale
         # Pre processing
-        scaler = StandardScaler().fit(X_train)
+        scaler = StandardScaler()
+        # Fit only to the training data
+        scaler.fit(X_train)
+
         X_train = scaler.transform(X_train)
         X_test = scaler.transform(X_test)
 
-
-        gnb = GaussianNB()
-
+        rf = RandomForestClassifier(max_depth=2, random_state=0)
+        
         print('\n-------------------------------------\n')
 
-        gnb.fit(X_train, y_train)
-        print(gnb, '\n')
+        rf.fit(X_train, y_train)
+        print(rf, '\n')
+        print(rf.feature_importances_)
 
         print('\n-------------------------------------\n')
         # Compare y_test
         #print('\nY Test Class: ', y_test, len(y_test), '\n')
-        test_predict = gnb.predict(X_test)
+        test_predict = rf.predict(X_test)
         print('Test Predict: ', test_predict, len(test_predict))
 
         accuracy = metrics.accuracy_score(y_test, test_predict)
         print('Test Accuracy: ', accuracy)
         print('\n-------------------------------------\n')
-        train_predict = gnb.predict(X_train)
+        train_predict = rf.predict(X_train)
         print('Train Predict: ', train_predict, len(train_predict))
 
         accuracy = metrics.accuracy_score(y_train, train_predict)
