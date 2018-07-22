@@ -65,7 +65,7 @@ def import_points():
         # Testing data creation
         counter = 0
         if img_sample % 2 == 0:
-            while counter < 30:
+            while counter < 10:
                 try:
                     # Read the files
                     face_array = read_files('m', counter + 1, img_sample + 1)
@@ -73,7 +73,7 @@ def import_points():
                     vector_pts = np.array(face_array)
                     vector_pts = vector_pts.reshape(22, 2)
 
-                    print('last cood train: ', img_sample, ':', counter, vector_pts[-1])
+                    #print('last cood train: ', img_sample, ':', counter, vector_pts[-1])
                     # Add Features to the dataset
                     #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
                     data_training.append(feature_extraction(vector_pts))
@@ -89,7 +89,7 @@ def import_points():
                 # Count up
             img_sample += 1
         else:
-            while counter < 30:
+            while counter < 10:
                 try:
                     # Read the files
                     face_array = read_files('m', counter + 1, img_sample + 1)
@@ -97,7 +97,7 @@ def import_points():
                     vector_pts = np.array(face_array)
                     vector_pts = vector_pts.reshape(22, 2)
 
-                    print('last coord test: ', img_sample, ':', counter, vector_pts[-1])
+                    #print('last coord test: ', img_sample, ':', counter, vector_pts[-1])
                     # Add Features to the dataset
                     #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
                     data_testing.append(feature_extraction(vector_pts))
@@ -114,28 +114,28 @@ def import_points():
             img_sample += 1
 
         counter = 0
-        while counter < 30:
-                try:
-                    # Read the files
-                    face_array = read_files('m', counter + 1, 5)
-                    # Convert to nupmy array
-                    vector_pts = np.array(face_array)
-                    vector_pts = vector_pts.reshape(22, 2)
+    while counter < 10:
+            try:
+                # Read the files
+                face_array = read_files('m', counter + 1, 5)
+                # Convert to nupmy array
+                vector_pts = np.array(face_array)
+                vector_pts = vector_pts.reshape(22, 2)
 
-                    print('last cood train: ', 5, ':', counter, vector_pts[-1])
-                    # Add Features to the dataset
-                    #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
-                    data_training.append(feature_extraction(vector_pts))
-                    target_training.append(counter)
-                    counter += 1
-                #except IOError as err:
-                    #print("I/O error: {0}".format(err))
-                    #pass
-                except:
-                    print('Person: ', img_sample, ': ', counter, ' was skipped.')
-                    #print("Unexpected error:", sys.exc_info()[0])
-                    #pass
-                # Count up
+                #print('last cood train: ', 5, ':', counter, vector_pts[-1])
+                # Add Features to the dataset
+                #dataset = dataset.append({'data': feature_extraction(vector_pts)}, {'target': counter}, ignore_index=True)
+                data_training.append(feature_extraction(vector_pts))
+                target_training.append(counter)
+                counter += 1
+            #except IOError as err:
+                #print("I/O error: {0}".format(err))
+                #pass
+            except:
+                print('Person: ', img_sample, ': ', counter, ' was skipped.')
+                #print("Unexpected error:", sys.exc_info()[0])
+                #pass
+            # Count up
            
 
 
@@ -214,6 +214,20 @@ def right_face_ratio(pt_21, pt_19, pt_13):
     feature_8 = np.linalg.norm(pt_21-pt_19) / np.linalg.norm(pt_13-pt_19)
     return feature_8
 
+# 10. left face ratio
+def left_cheek_ratio(pt_15, pt_14, pt_20, pt_13):
+    feature_9 = np.linalg.norm(pt_15-pt_14) / np.linalg.norm(pt_20-pt_13)
+    return feature_9
+
+# 11. right face ratio
+def right_cheek_ratio(pt_14, pt_16, pt_21, pt_8):
+    feature_10 = np.linalg.norm(pt_14-pt_16) / np.linalg.norm(pt_21-pt_8)
+    return feature_10
+
+# 12. right face ratio
+def brows_ratio(pt_6, pt_5, pt_2, pt_4):
+    feature_11 = np.linalg.norm(pt_6-pt_5) / np.linalg.norm(pt_2-pt_4)
+    return feature_11
 
 '''
     Feature Extraction
@@ -228,10 +242,10 @@ def feature_extraction(vector_pts):
     feature_6 = aggressive_ratio(vector_pts[10, ], vector_pts[19, ], vector_pts[20, ], vector_pts[21, ])
     feature_7 = left_face_ratio(vector_pts[20, ], vector_pts[19, ], vector_pts[8, ])
     feature_8 = right_face_ratio(vector_pts[21, ], vector_pts[19, ], vector_pts[13, ])
-    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_8]
-    #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6]
-    #features = [feature_0,feature_1,feature_3,feature_4,feature_5]
-    #print('features: ', features)
+    feature_9 = left_cheek_ratio(vector_pts[15, ], vector_pts[14, ], vector_pts[20, ], vector_pts[13, ])
+    feature_10 = right_cheek_ratio(vector_pts[14, ], vector_pts[16, ], vector_pts[21, ], vector_pts[8, ])
+    feature_11 = brows_ratio(vector_pts[6, ], vector_pts[5, ], vector_pts[2, ], vector_pts[4, ])
+    features = [feature_0,feature_1,feature_2,feature_3,feature_5,feature_6,feature_11]
     return features
 
 '''
@@ -272,7 +286,7 @@ def main():
         print("\n\n K-nn \n ------------------------------------------------------------- \n")
         # The dataset
         data_set = import_points()
-        #print('Just features: \n', data_set, '\n\n')
+        print('Just features length: \n', len(data_set), '\n\n')
 
         X_train = data_set['data_train']
         y_train = data_set['target_train']
@@ -294,7 +308,7 @@ def main():
         #X_train = normalizer.transform(X_train)
         #X_test = normalizer.transform(X_test)
 
-        neigh = KNeighborsClassifier(n_neighbors=1)
+        neigh = KNeighborsClassifier(n_neighbors=3)
 
         print('\n-------------------------------------\n')
 

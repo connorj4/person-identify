@@ -221,6 +221,11 @@ def right_cheek_ratio(pt_14, pt_16, pt_21, pt_8):
     feature_10 = np.linalg.norm(pt_14-pt_16) / np.linalg.norm(pt_21-pt_8)
     return feature_10
 
+# 12. right face ratio
+def brows_ratio(pt_6, pt_5, pt_2, pt_4):
+    feature_11 = np.linalg.norm(pt_6-pt_5) / np.linalg.norm(pt_2-pt_4)
+    return feature_11
+
 
 '''
     Feature Extraction
@@ -237,9 +242,8 @@ def feature_extraction(vector_pts):
     feature_8 = right_face_ratio(vector_pts[21, ], vector_pts[19, ], vector_pts[13, ])
     feature_9 = left_cheek_ratio(vector_pts[15, ], vector_pts[14, ], vector_pts[20, ], vector_pts[13, ])
     feature_10 = right_cheek_ratio(vector_pts[14, ], vector_pts[16, ], vector_pts[21, ], vector_pts[8, ])
-    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_9]
-   #features = [feature_0,feature_1,feature_3,feature_4,feature_5]
-    #print('features: ', features)
+    feature_11 = brows_ratio(vector_pts[6, ], vector_pts[5, ], vector_pts[2, ], vector_pts[4, ])
+    features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_8,feature_9,feature_10,feature_11]
     return features
 
 '''

@@ -111,7 +111,7 @@ def import_points():
                 # Count up
             img_sample += 1
 
-            counter = 0
+    counter = 0
     while counter < 30:
             try:
                 # Read the files
@@ -221,6 +221,11 @@ def right_cheek_ratio(pt_14, pt_16, pt_21, pt_8):
     feature_10 = np.linalg.norm(pt_14-pt_16) / np.linalg.norm(pt_21-pt_8)
     return feature_10
 
+# 12. right face ratio
+def brows_ratio(pt_6, pt_5, pt_2, pt_4):
+    feature_11 = np.linalg.norm(pt_6-pt_5) / np.linalg.norm(pt_2-pt_4)
+    return feature_11
+
 
 '''
     Feature Extraction
@@ -237,9 +242,10 @@ def feature_extraction(vector_pts):
     feature_8 = right_face_ratio(vector_pts[21, ], vector_pts[19, ], vector_pts[13, ])
     feature_9 = left_cheek_ratio(vector_pts[15, ], vector_pts[14, ], vector_pts[20, ], vector_pts[13, ])
     feature_10 = right_cheek_ratio(vector_pts[14, ], vector_pts[16, ], vector_pts[21, ], vector_pts[8, ])
-   #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_8,feature_9,feature_10]
+    feature_11 = brows_ratio(vector_pts[6, ], vector_pts[5, ], vector_pts[2, ], vector_pts[4, ])
+   #features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7,feature_8,feature_9,feature_10,feature_11]
     features = [feature_0,feature_1,feature_2,feature_3,feature_4,feature_5,feature_6,feature_7]
-    #print('features: ', features)
+
     return features
 
 '''
@@ -280,9 +286,10 @@ def main():
         print("\n\n ANN... \n ------------------------------------------------------------- \n")
         # The dataset
         data_set = import_points()
-        #print('Just features: \n', data_set, '\n\n')
+        print('length features: \n', data_set, '\n\n')
 
         X_train = data_set['data_train']
+        print(len(X_train))
         y_train = data_set['target_train']
 
         X_test = data_set['data_test']
@@ -296,7 +303,7 @@ def main():
         X_train = scaler.transform(X_train)
         X_test = scaler.transform(X_test)
 
-        mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
+        mlp = MLPClassifier(hidden_layer_sizes=(9,9,9),max_iter=500)
         
         print('\n-------------------------------------\n')
 
